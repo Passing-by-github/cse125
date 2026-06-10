@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>weekly reports — CSE 125 Group 1</title>
+  <meta name="theme-color" content="#0a1128">
+
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+
+  <link rel="preload" href="../fonts/KiwiSoda.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="weekly_reports.png" as="image">
+
+  <style>
+    @font-face {
+      font-family: 'KiwiSoda';
+      src: url('../fonts/KiwiSoda.woff2') format('woff2');
+      font-display: swap;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      color: #fff;
+      overflow: hidden;
+      background: #12006e;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 28px;
+      left: 32px;
+      font-size: 18px;
+      color: rgba(255,255,255,.65);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 200ms ease;
+      z-index: 20;
+      text-shadow: 0 2px 12px rgba(0,0,0,.85);
+    }
+
+    .back-link:hover,
+    .back-link:focus-visible {
+      color: #ffd166;
+      outline: none;
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background:
+        linear-gradient(rgba(8, 3, 45, .10), rgba(8, 3, 45, .18)),
+        url("weekly_reports.png") center center / cover no-repeat;
+    }
+
+    .report-link {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+
+  width: auto;
+  height: auto;
+  border-radius: 0;
+
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+
+  text-shadow:
+    0 2px 8px rgba(0,0,0,.95),
+    0 0 16px rgba(0,0,0,.8);
+
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  transition:
+    transform 260ms cubic-bezier(.2,.7,.3,1.2),
+    color 220ms ease,
+    text-shadow 220ms ease;
+    }
+    .report-link:hover,
+    .report-link:focus-visible {
+      color: #ffd166;
+      transform: translate(-50%, -50%) scale(1.16) rotate(-3deg);
+      text-shadow:
+        0 2px 10px rgba(0,0,0,.95),
+        0 0 12px rgba(255, 209, 102, .65),
+        0 0 24px rgba(255, 140, 50, .35);
+      outline: none;
+    }
+
+    .week-3:hover,
+    .week-3:focus-visible,
+    .week-4:hover,
+    .week-4:focus-visible,
+    .week-7:hover,
+    .week-7:focus-visible {
+      transform: translate(-50%, -50%) scale(1.16) rotate(3deg);
+    }
+
+    
+    .report-link.text-orange:hover,
+    .report-link.text-orange:focus-visible {
+      color: #ff8a5b;
+    }
+
+    .report-link.text-blue:hover,
+    .report-link.text-blue:focus-visible {
+      color: #65d9ff;
+    }
+
+    /* positions based on the visible circles in your background */
+    .week-2 {
+      left: 16.6%;
+      top: 24.6%;
+      font-size: clamp(1.8rem, 3.7vw, 3.7rem);
+    }
+
+    .week-3 {
+      left: 35.3%;
+      top: 36.4%;
+      font-size: clamp(1.55rem, 2.65vw, 2.65rem);
+    }
+
+.week-4 {
+  left: 55%;
+  top: 56.2%;
+  font-size: clamp(.9rem, 1.3vw, 1.3rem);
+}
+
+.week-5 {
+   left: 62.6%;
+  top: 53%;
+   font-size: clamp(1.15rem, 1.35vw, 1.35rem);
+}
+
+.week-6 {
+  left: 46%;
+  top: 62.9%;
+  font-size: clamp(.8rem, 1.05vw, 1.05rem);
+}
+
+.week-7 {
+  left: 56%;
+  top: 87.2%;
+  font-size: clamp(1.3rem, 4vw, 4rem);
+}
+
+.week-8 {
+  left: 33%;
+  top: 85%;
+  font-size: clamp(1.55rem, 2.65vw, 2.65rem);
+}
+
+  .week-9 {
+    left: 28.3%;
+    top: 52.5%;
+    font-size: clamp(1.15rem, 1.35vw, 1.35rem);
+  }
+
+    .title {
+      position: fixed;
+      top: 28px;
+      right: 36px;
+      z-index: 20;
+      text-align: right;
+      font-size: 22px;
+      color: rgba(255,255,255,.9);
+      letter-spacing: .04em;
+      text-shadow: 0 2px 12px rgba(0,0,0,.85);
+      pointer-events: none;
+    }
+
+    .title span {
+      display: block;
+      font-size: 14px;
+      color: rgba(255,255,255,.55);
+      margin-top: 3px;
+    }
+
+    @media (max-width: 800px) {
+      .report-link {
+        width: 68px;
+        height: 68px;
+        font-size: .8rem;
+      }
+
+      .back-link {
+        top: 20px;
+        left: 22px;
+      }
+
+      .title {
+        top: 20px;
+        right: 22px;
+        font-size: 17px;
+      }
+
+      .title span {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a href="../" class="back-link">← back</a>
+
+  <div class="title">
+    weekly reports
+    <span>pick a tree!</span>
+  </div>
+
+  <main class="stage">
+    <section class="scene" aria-label="weekly reports">
+      <a
+        href="https://www.notion.so/Week-2-Report-341c9cf47d18803aa896cabd6cefe1e2"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-2"
+      >
+        <span>Week<br>2</span>
+      </a>
+
+      <a
+        href="https://www.notion.so/Week-3-Report-348c9cf47d1880f49cdfd2fb56e78369?source=copy_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-3 text-orange"
+      >
+        <span>Week<br>3</span>
+      </a>
+
+      <a
+        href="https://www.notion.so/Week-4-Report-34fc9cf47d1880ad8d7ae46a664b08e4?source=copy_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-4"
+      >
+        <span>Week<br>4</span>
+      </a>
+
+      <a
+        href="https://www.notion.so/Week-5-Report-356c9cf47d1880a28efcf254b09e896f?source=copy_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-5 text-blue"
+      >
+        <span>Week<br>5</span>
+      </a>
+
+      <a
+        href="https://www.notion.so/Week-6-Report-35dc9cf47d18804cb5cfd75dffa3d41c?source=copy_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-6 text-orange"
+      >
+        <span>Week<br>6</span>
+      </a>
+
+      <a
+        href="https://www.notion.so/Week-7-Report-364c9cf47d188070845ee274f6b8738a?source=copy_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-7 text-blue"
+      >
+        <span>Week<br>7</span>
+      </a>
+
+      <a
+        href="https://www.notion.so/Week-8-Report-364c9cf47d1880219222c58d2620f6f2?source=copy_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-8"
+      >
+        <span>Week<br>8</span>
+      </a>
+
+      <a
+        href="https://www.notion.so/Week-9-Report-364c9cf47d18809899eac7c77e22f20c?source=copy_link"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="report-link week-9 text-blue"
+      >
+        <span>Week<br>9</span>
+      </a>
+    </section>
+  </main>
+</body>
+</html>

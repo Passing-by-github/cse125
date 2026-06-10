@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>CSE 125 GROUP 1 — 2026</title>
+  <meta name="description" content="Group 1's game site :>">
+  <meta name="theme-color" content="#08153d">
+  <meta property="og:title" content="CSE 125 GROUP 1 — 2026">
+  <meta property="og:description" content="Group 1's game site :>">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preload" href="fonts/KiwiSoda.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/main.png" as="image">
+  <style>
+    @font-face {
+      font-family: 'KiwiSoda';
+      src: url('fonts/KiwiSoda.woff2') format('woff2');
+      font-display: swap;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      color: #fff;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(255,210,80,.20), transparent 25%),
+        radial-gradient(ellipse 70% 55% at 42% 52%, rgba(75,105,255,.45), transparent 65%),
+        linear-gradient(180deg, #080026 0%, #12007a 48%, #252cff 100%);
+    }
+
+    .stage { position: absolute; inset: 0; display: grid; place-items: center; }
+    .scene {
+      position: relative;
+      width: min(92vw, 150vh);
+      aspect-ratio: 2560 / 1351;
+    }
+
+    .site-header {
+      position: fixed; top: 28px; right: 36px; text-align: right;
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      font-size: 22px; color: rgba(255,255,255,.9);
+      letter-spacing: 0.04em; z-index: 10;
+      text-shadow: 0 2px 14px rgba(0,0,0,.5);
+    }
+    .site-header .tagline {
+      display: block; font-size: 14px;
+      color: rgba(255,255,255,.5); margin-top: 3px;
+    }
+
+    /* ---- Visual layers (full-canvas images, black = invisible via screen) ---- */
+    .layer {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      /*mix-blend-mode: screen;*/
+      transition: filter 280ms ease, transform 380ms cubic-bezier(.2,.7,.3,1.2);
+      will-change: filter, transform;
+    }
+    .layer img {
+      width: 100%; height: 100%;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Transform origins at each piece's content center */
+    .layer--main     { transform-origin: 30.9% 49.5%; z-index: 3; }
+    .layer--repo_sun { transform-origin: 15.6% 16.0%; z-index: 2; }
+    .layer--audio    { transform-origin: 51.9% 71.7%; z-index: 2; }
+    .layer--reports  { transform-origin: 25.0% 89.4%; z-index: 2; }
+
+    /* Hover glow — triggered via :has() from hotspot hover */
+    .scene:has(#hs-main:hover) .layer--main,
+    .scene:has(#hs-main:focus-visible) .layer--main {
+      
+      filter:url(#outline-yellow);
+      transform: scale(1.04);
+    }
+    .scene:has(#hs-sun:hover) .layer--repo_sun,
+    .scene:has(#hs-sun:focus-visible) .layer--repo_sun {
+      filter: url(#outline-yellow);
+      transform: scale(1.06);
+    }
+    .scene:has(#hs-audio:hover) .layer--audio,
+    .scene:has(#hs-audio:focus-visible) .layer--audio {
+      filter: url(#outline-yellow);
+      transform: scale(1.08);
+    }
+    .scene:has(#hs-reports:hover) .layer--reports,
+    .scene:has(#hs-reports:focus-visible) .layer--reports {
+      filter: url(#outline-yellow);
+      transform: scale(1.08);
+    }
+
+    /* ---- Hotspots (invisible clickable areas over content) ---- */
+    .hotspot {
+      position: absolute;
+      display: block;
+      text-decoration: none;
+      cursor: pointer;
+      z-index: 5;
+    }
+    .hotspot:focus { outline: none; }
+
+    /* ---- Sun rays ---- */
+    .sun-rays {
+      position: absolute;
+      left: 15.65%; top: 16%;
+      width: 160%; aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255,220,80,.40) 0deg 3deg, transparent 3deg 20deg,
+        rgba(255,160,60,.32) 20deg 23deg, transparent 23deg 40deg,
+        rgba(255,180,160,.26) 40deg 43deg, transparent 43deg 55deg,
+        rgba(255,240,120,.38) 55deg 58deg, transparent 58deg 72deg
+      );
+      filter: blur(8px);
+      mask-image: radial-gradient(circle at center,
+        transparent 0%, transparent 3%,
+        rgba(0,0,0,.8) 6%, rgba(0,0,0,.7) 25%,
+        rgba(0,0,0,.4) 45%, rgba(0,0,0,.15) 65%, transparent 80%
+      );
+      -webkit-mask-image: radial-gradient(circle at center,
+        transparent 0%, transparent 3%,
+        rgba(0,0,0,.8) 6%, rgba(0,0,0,.7) 25%,
+        rgba(0,0,0,.4) 45%, rgba(0,0,0,.15) 65%, transparent 80%
+      );
+      animation: sun-rotate 40s linear infinite;
+    }
+    @keyframes sun-rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Sun pulse */
+    .layer--repo_sun {
+      animation: sun-pulse 5s ease-in-out infinite;
+    }
+    @keyframes sun-pulse {
+      0%, 100% { filter: brightness(1); }
+      50%      { filter: brightness(1.08); }
+    }
+
+    /* ---- Sparkles ---- */
+    .sparkle {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 1;
+  will-change: transform, opacity;
+}
+
+.sparkle img {
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  filter:
+    sepia(.75)
+    saturate(3.2)
+    hue-rotate(330deg)
+    brightness(1.18)
+    drop-shadow(0 0 5px rgba(255, 190, 70, .75))
+    drop-shadow(0 0 12px rgba(255, 115, 35, .35));
+}
+
+    /* smoke effect */ 
+    .smoke-puff {
+      position: fixed;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+      z-index: 18;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    .smoke-puff img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      opacity: 0.82;
+      filter:
+        drop-shadow(0 8px 18px rgba(0,0,0,.10))
+        blur(.2px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .smoke-puff {
+        display: none;
+      }
+    }
+  
+    /* ---- Labels ---- */
+    .piece__label {
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%) translateY(8px);
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+      color: #fff; letter-spacing: 0.04em;
+      opacity: 0; pointer-events: none;
+      transition: opacity 240ms ease, transform 380ms cubic-bezier(.2,.7,.3,1);
+      text-shadow: 0 2px 18px rgba(0,0,0,.95), 0 0 30px rgba(0,0,0,.7);
+      white-space: nowrap;
+    }
+    .hotspot:hover .piece__label,
+    .hotspot:focus-visible .piece__label {
+      opacity: 1;
+      transform: translate(-50%, -50%) translateY(0);
+    }
+    #hs-main .piece__label--top    { top: 40%; }
+    #hs-main .piece__label--bottom { top: 55%; font-size: clamp(1rem, 2vw, 1.6rem); color: rgba(255,255,255,.75); }
+
+    @media (hover: none) { .piece__label { opacity: .85; } }
+    @media (prefers-reduced-motion: reduce) {
+      .sun-rays, .layer--repo_sun { animation: none; }
+      .sparkle { display: none; }
+    }
+
+    .footer-hint {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      font-size: 12px; color: rgba(255,255,255,.4);
+      letter-spacing: 0.15em; text-transform: lowercase;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    cse 125 · group 1 · 2026
+    <span class="tagline">join us in our journey</span>
+  </header>
+
+  <main class="stage">
+    <nav class="scene" aria-label="main navigation">
+
+      <!-- Sun rays behind everything -->
+      <div class="sun-rays" aria-hidden="true"></div>
+
+      <!-- Visual layers — full canvas images, black removed via screen blend -->
+      <div class="layer layer--repo_sun"><img src="assets/repo_sun.png" alt="" draggable="false"></div>
+      <div class="layer layer--main"><img src="assets/main.png" alt="" draggable="false"></div>
+      <div class="layer layer--audio"><img src="assets/audio.png" alt="" draggable="false"></div>
+      <div class="layer layer--reports"><img src="assets/reports.png" alt="" draggable="false"></div>
+
+      <!-- Clickable hotspots — positioned over each piece's content area -->
+      <a class="hotspot" id="hs-main" href="main/" aria-label="specs and final report">
+        <span class="piece__label piece__label--top">specs</span>
+        <span class="piece__label piece__label--bottom">final report</span>
+      </a>
+
+      <a class="hotspot" id="hs-sun"
+         href="https://github.com/ucsd-cse125-sp26/group1/tree/main"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="code repo (opens in new tab)">
+        <span class="piece__label">code repo</span>
+      </a>
+
+      <a class="hotspot" id="hs-audio" href="sound-board/" aria-label="sound board">
+        <span class="piece__label">sound board</span>
+      </a>
+
+      <a class="hotspot" id="hs-reports" href="weekly-reports/" aria-label="weekly reports">
+        <span class="piece__label">weekly reports</span>
+      </a>
+
+    </nav>
+  </main>
+
+  <div class="footer-hint">hover on a piece</div>
+
+  <script>
+    // Hotspot positions (content bounding boxes as % of 2560x1351 canvas)
+    const hotspots = {
+      'hs-main':    { left: 10.59, top: 17.76, w: 40.70, h: 63.36 },
+      'hs-sun':     { left:  6.84, top:  0.00, w: 17.58, h: 32.05 },
+      'hs-audio':   { left: 44.96, top: 49.67, w: 13.83, h: 43.97 },
+      'hs-reports': { left: 18.09, top: 79.27, w: 13.83, h: 20.28 },
+    };
+    for (const [id, p] of Object.entries(hotspots)) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      el.style.left   = p.left + '%';
+      el.style.top    = p.top + '%';
+      el.style.width  = p.w + '%';
+      el.style.height = p.h + '%';
+    }
+
+    // Sparkles on sun hover
+  // Sparkles on sun hover — lingering + full-screen bouncing
+const sunHotspot = document.getElementById('hs-sun');
+
+let sparkleTimer = null;
+let sparkleRAF = null;
+let lastSparkleTime = performance.now();
+
+const sparkleImages = ['assets/spark.png', 'assets/Star.png'];
+const sparkles = [];
+
+const MAX_SPARKLES = 45;
+
+function spawnSparkle() {
+  if (sparkles.length >= MAX_SPARKLES) {
+    const old = sparkles.shift();
+    old.el.remove();
+  }
+
+  const sunRect = sunHotspot.getBoundingClientRect();
+
+  const cx = sunRect.left + sunRect.width * 0.5;
+  const cy = sunRect.top + sunRect.height * 0.45;
+
+  const r = (Math.random() * 0.38 + 0.05) * sunRect.width;
+  const a0 = Math.random() * Math.PI * 2;
+
+  const x = cx + Math.cos(a0) * r;
+  const y = cy + Math.sin(a0) * r;
+
+  const size = 12 + Math.random() * 22;
+  const angle = Math.random() * Math.PI * 2;
+  const speed = 55 + Math.random() * 80;
+
+  const el = document.createElement('div');
+  el.className = 'sparkle';
+
+  const img = document.createElement('img');
+  img.src = sparkleImages[Math.floor(Math.random() * sparkleImages.length)];
+  img.alt = '';
+  img.draggable = false;
+
+  el.appendChild(img);
+  document.body.appendChild(el);
+
+  const life = 3.5 + Math.random() * 2.2;
+
+  const sparkle = {
+    el,
+    x,
+    y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed - 25,
+    size,
+    life,
+    maxLife: life,
+    rotation: Math.random() * 360,
+    rotationSpeed: -90 + Math.random() * 180
+  };
+
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+
+  sparkles.push(sparkle);
+
+  if (!sparkleRAF) {
+    lastSparkleTime = performance.now();
+    sparkleRAF = requestAnimationFrame(updateSparkles);
+  }
+}
+
+function updateSparkles(now) {
+  const dt = Math.min((now - lastSparkleTime) / 1000, 0.033);
+  lastSparkleTime = now;
+
+  const boundsW = window.innerWidth;
+  const boundsH = window.innerHeight;
+
+  for (let i = sparkles.length - 1; i >= 0; i--) {
+    const s = sparkles[i];
+
+    s.x += s.vx * dt;
+    s.y += s.vy * dt;
+    s.rotation += s.rotationSpeed * dt;
+    s.life -= dt;
+
+    // Bounce from full screen edges
+    if (s.x <= 0) {
+      s.x = 0;
+      s.vx *= -0.86;
+    }
+
+    if (s.x + s.size >= boundsW) {
+      s.x = boundsW - s.size;
+      s.vx *= -0.86;
+    }
+
+    if (s.y <= 0) {
+      s.y = 0;
+      s.vy *= -0.86;
+    }
+
+    if (s.y + s.size >= boundsH) {
+      s.y = boundsH - s.size;
+      s.vy *= -0.86;
+    }
+
+    // soft floaty slowing
+    s.vx *= 0.996;
+    s.vy *= 0.996;
+
+    const opacity = Math.max(s.life / s.maxLife, 0);
+    const scale = 0.65 + opacity * 0.45;
+
+    s.el.style.opacity = opacity;
+    s.el.style.transform =
+      `translate(${s.x}px, ${s.y}px) scale(${scale}) rotate(${s.rotation}deg)`;
+
+    if (s.life <= 0) {
+      s.el.remove();
+      sparkles.splice(i, 1);
+    }
+  }
+
+  if (sparkles.length > 0) {
+    sparkleRAF = requestAnimationFrame(updateSparkles);
+  } else {
+    sparkleRAF = null;
+  }
+}
+
+sunHotspot.addEventListener('mouseenter', () => {
+  spawnSparkle();
+  sparkleTimer = setInterval(spawnSparkle, 95);
+});
+
+sunHotspot.addEventListener('mouseleave', () => {
+  clearInterval(sparkleTimer);
+  sparkleTimer = null;
+
+  for (let i = 0; i < 6; i++) {
+    setTimeout(spawnSparkle, i * 55);
+  }
+});
+
+
+// ---- Smoke on sound-board hover ----
+const audioHotspot = document.getElementById('hs-audio');
+
+let smokeTimer = null;
+let smokeRAF = null;
+let lastSmokeTime = performance.now();
+
+const smokes = [];
+const MAX_SMOKES = 10;
+
+function spawnSmoke() {
+  if (!audioHotspot) return;
+
+  if (smokes.length >= MAX_SMOKES) {
+    const old = smokes.shift();
+    old.el.remove();
+  }
+
+  const rect = audioHotspot.getBoundingClientRect();
+
+  // spawn from upper-middle area of the sound board island
+  const x = rect.left + rect.width * (0.42 + Math.random() * 0.16);
+  const y = rect.top + rect.height * (0.18 + Math.random() * 0.12);
+
+  const size = 60 + Math.random() * 40;
+  const drift = -18 + Math.random() * 36;
+  const rise = 26 + Math.random() * 55;
+  const life = 1.8 + Math.random() * 2.4;
+
+  const el = document.createElement('div');
+  el.className = 'smoke-puff';
+
+  const img = document.createElement('img');
+  img.src = 'assets/smoke.png';
+  img.alt = '';
+  img.draggable = false;
+
+  el.appendChild(img);
+  document.body.appendChild(el);
+
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+
+  const smoke = {
+    el,
+    x,
+    y,
+    vx: drift,
+    vy: -rise,
+    size,
+    life,
+    maxLife: life,
+    scale: 0.72 + Math.random() * 0.18,
+    scaleGrow: 0.18 + Math.random() * 0.22,
+    rot: -10 + Math.random() * 20,
+    rotSpeed: -8 + Math.random() * 16
+  };
+
+  smokes.push(smoke);
+
+  if (!smokeRAF) {
+    lastSmokeTime = performance.now();
+    smokeRAF = requestAnimationFrame(updateSmoke);
+  }
+}
+
+function updateSmoke(now) {
+  const dt = Math.min((now - lastSmokeTime) / 1000, 0.033);
+  lastSmokeTime = now;
+
+  for (let i = smokes.length - 1; i >= 0; i--) {
+    const s = smokes[i];
+
+    s.x += s.vx * dt;
+    s.y += s.vy * dt;
+    s.rot += s.rotSpeed * dt;
+    s.life -= dt;
+
+    // soften movement over time
+    s.vx *= 0.994;
+    s.vy *= 0.997;
+
+    const t = 1 - (s.life / s.maxLife); // 0 -> 1
+    let opacity;
+
+    if (t < 0.15) {
+      opacity = (t / 0.15) * 0.72;
+    } else if (t < 0.65) {
+      opacity = 0.72;
+    } else {
+      opacity = ((1 - t) / 0.35) * 0.72;
+    }
+
+    const scale = s.scale + t * s.scaleGrow;
+
+    s.el.style.opacity = Math.max(opacity, 0);
+    s.el.style.transform =
+      `translate(${s.x}px, ${s.y}px) scale(${scale}) rotate(${s.rot}deg)`;
+
+    if (s.life <= 0) {
+      s.el.remove();
+      smokes.splice(i, 1);
+    }
+  }
+
+  if (smokes.length > 0) {
+    smokeRAF = requestAnimationFrame(updateSmoke);
+  } else {
+    smokeRAF = null;
+  }
+}
+
+audioHotspot?.addEventListener('mouseenter', () => {
+  spawnSmoke();
+  smokeTimer = setInterval(spawnSmoke, 270);
+});
+
+audioHotspot?.addEventListener('mouseleave', () => {
+  clearInterval(smokeTimer);
+  smokeTimer = null;
+
+  // slight lingering burst, like the sparkles
+  for (let i = 0; i < 4; i++) {
+    setTimeout(spawnSmoke, i * 90);
+  }
+});
+
+  </script>
+</body>
+
+</html>

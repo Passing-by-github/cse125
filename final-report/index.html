@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>final report — CSE 125 Group 1</title>
+  <meta name="theme-color" content="#08153d">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="preload" href="../fonts/KiwiSoda.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face { font-family: 'KiwiSoda'; src: url('../fonts/KiwiSoda.woff2') format('woff2'); font-display: swap; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'KiwiSoda', system-ui, sans-serif; color: #fff; overflow: hidden;
+      background: radial-gradient(ellipse 80% 50% at 30% 25%, rgba(50,80,170,.3), transparent 70%),
+        linear-gradient(180deg, #08153d 0%, #142560 55%, #1c3070 100%);
+    }
+    .back-link {
+      position: fixed; top: 28px; left: 32px; font-size: 18px;
+      color: rgba(255,255,255,.55); text-decoration: none;
+      letter-spacing: 0.04em; transition: color 200ms ease; z-index: 10;
+    }
+    .back-link:hover, .back-link:focus-visible { color: #ffd166; outline: none; }
+    .content {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1.2rem; padding: 0 20px;
+    }
+    .link {
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem); color: #fff; text-decoration: none;
+      text-shadow: 0 2px 18px rgba(0,0,0,.9), 0 0 30px rgba(0,0,0,.7);
+      letter-spacing: 0.02em; padding: 0.2em 0.6em;
+      border-bottom: 3px solid transparent;
+      transition: border-color 260ms ease, color 260ms ease;
+    }
+    .link:hover, .link:focus-visible { color: #ffd166; border-bottom-color: #ffd166; outline: none; }
+    .coming-soon {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      text-shadow: 0 2px 18px rgba(0,0,0,.9), 0 0 40px rgba(0,0,0,.7);
+    }
+  </style>
+</head>
+<body>
+  <a href="../" class="back-link">← back</a>
+  <main class="content">
+    <p class="coming-soon">coming soon :&gt;</p>
+  </main>
+</body>
+</html>

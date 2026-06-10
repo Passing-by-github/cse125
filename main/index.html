@@ -1,0 +1,165 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>specs & final report — CSE 125 Group 1</title>
+  <meta name="theme-color" content="#08153d">
+
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="preload" href="../fonts/KiwiSoda.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="final.png" as="image">
+
+  <style>
+    @font-face {
+      font-family: 'KiwiSoda';
+      src: url('../fonts/KiwiSoda.woff2') format('woff2');
+      font-display: swap;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      color: #fff;
+      overflow: hidden;
+      background: url("final.png") center center / cover no-repeat;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 28px;
+      left: 32px;
+      font-size: 18px;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 200ms ease, transform 200ms ease;
+      z-index: 10;
+      text-shadow:
+        0 2px 10px rgba(0,0,0,.75),
+        0 0 18px rgba(0,0,0,.45);
+    }
+
+    .back-link:hover,
+    .back-link:focus-visible {
+      color: #ffd166;
+      transform: translateX(-3px);
+      outline: none;
+    }
+
+    .content {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .link {
+      position: absolute;
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      font-size: clamp(2rem, 4.5vw, 4.2rem);
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+
+      text-shadow:
+        0 3px 10px rgba(0,0,0,.9),
+        0 0 22px rgba(0,0,0,.7),
+        0 0 40px rgba(255, 200, 90, .22);
+
+      transition:
+        color 220ms ease,
+        transform 260ms cubic-bezier(.2,.7,.3,1.2),
+        text-shadow 220ms ease;
+    }
+
+    .link:hover,
+    .link:focus-visible {
+      color: #ffd166;
+      transform: translate(-50%, -50%) scale(1.12) rotate(-3deg);
+      text-shadow:
+        0 3px 10px rgba(0,0,0,.9),
+        0 0 16px rgba(255, 209, 102, .75),
+        0 0 34px rgba(255, 140, 50, .45);
+      outline: none;
+    }
+
+    .link--specs {
+      left: 18%;
+      top: 26%;
+      transform: translate(-50%, -50%) rotate(-6deg);
+    }
+
+    .link--final {
+      left: 84%;
+      top: 26%;
+      transform: translate(-50%, -50%) rotate(5deg);
+    }
+
+    .link--specs:hover,
+    .link--specs:focus-visible {
+      transform: translate(-50%, -50%) scale(1.12) rotate(-9deg);
+    }
+
+    .link--final:hover,
+    .link--final:focus-visible {
+      transform: translate(-50%, -50%) scale(1.12) rotate(9deg);
+    }
+
+    
+
+    @media (max-width: 800px) {
+      .link {
+        font-size: clamp(1.5rem, 7vw, 2.5rem);
+      }
+
+      .link--specs {
+        left: 30%;
+        top: 31%;
+      }
+
+      .link--final {
+        left: 70%;
+        top: 31%;
+      }
+
+      .back-link {
+        top: 20px;
+        left: 22px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a href="../" class="back-link">← back</a>
+
+  <main class="content">
+    <a
+      href="https://www.notion.so/CSE-125-33a5a330dd7980698a48d1ae93d624ee"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="link link--specs"
+    >
+      Specs
+    </a>
+
+    <a href="../final-report/" class="link link--final">
+      Final Report
+    </a>
+  </main>
+</body>
+</html>
