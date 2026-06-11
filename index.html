@@ -213,95 +213,33 @@
       .ship-link { animation: none; }
     }
 
-    /* ---- Sparkles ---- */
-    .sparkle {
-  position: fixed;
-  left: 0;
-  top: 0;
-  pointer-events: none;
-  z-index: 20;
-  opacity: 1;
-  will-change: transform, opacity;
-}
-
-.sparkle img {
-  width: 100%;
-  height: 100%;
-  display: block;
-
-  filter:
-    sepia(.75)
-    saturate(3.2)
-    hue-rotate(330deg)
-    brightness(1.18)
-    drop-shadow(0 0 5px rgba(255, 190, 70, .75))
-    drop-shadow(0 0 12px rgba(255, 115, 35, .35));
-}
-
-    /* ---- Hearts ---- */
-    .heart-particle {
-      position: fixed;
-      left: 0;
-      top: 0;
-      pointer-events: none;
-      z-index: 20;
+    /* ---- Particles (shared base) ---- */
+    .particle {
+      position: fixed; left: 0; top: 0;
+      pointer-events: none; z-index: 20;
       will-change: transform, opacity;
     }
+    .particle img { width: 100%; height: 100%; display: block; }
 
+    .sparkle img {
+      filter: sepia(.75) saturate(3.2) hue-rotate(330deg) brightness(1.18)
+              drop-shadow(0 0 5px rgba(255,190,70,.75))
+              drop-shadow(0 0 12px rgba(255,115,35,.35));
+    }
     .heart-particle img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      filter:
-        drop-shadow(0 0 5px rgba(255, 80, 120, .85))
-        drop-shadow(0 0 14px rgba(255, 30, 80, .45));
+      filter: drop-shadow(0 0 5px rgba(255,80,120,.85))
+              drop-shadow(0 0 14px rgba(255,30,80,.45));
     }
-
-    /* ---- Speed lines ---- */
-    .speed-particle {
-      position: fixed;
-      left: 0;
-      top: 0;
-      pointer-events: none;
-      z-index: 20;
-      will-change: transform, opacity;
-    }
-
     .speed-particle img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      filter:
-        drop-shadow(0 0 5px rgba(80, 220, 255, .85))
-        drop-shadow(0 0 14px rgba(30, 160, 255, .45));
+      filter: drop-shadow(0 0 5px rgba(80,220,255,.85))
+              drop-shadow(0 0 14px rgba(30,160,255,.45));
     }
-
-    /* smoke effect */ 
-    .smoke-puff {
-      position: fixed;
-      left: 0;
-      top: 0;
-      pointer-events: none;
-      z-index: 18;
-      opacity: 0;
-      will-change: transform, opacity;
-    }
-
+    .smoke-puff { z-index: 18; }
     .smoke-puff img {
-      width: 100%;
-      height: 100%;
-      display: block;
       opacity: 0.82;
-      filter:
-        drop-shadow(0 8px 18px rgba(0,0,0,.10))
-        blur(.2px);
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.10)) blur(.2px);
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      .smoke-puff {
-        display: none;
-      }
-    }
+    @media (prefers-reduced-motion: reduce) { .smoke-puff, .particle { display: none; } }
 
 
   
@@ -366,8 +304,8 @@
 
       <!-- Clickable hotspots — positioned over each piece's content area -->
       <a class="hotspot" id="hs-main" href="main/" aria-label="specs and final report">
-        <span class="piece__label piece__label--top">specs</span>
-        <span class="piece__label piece__label--bottom">final report</span>
+        <span class="piece__label">specs & Final</span>
+        <!--<span class="piece__label piece__label--bottom">final report</span>-->
       </a>
       
       <a class="hotspot" id="hs-sun"
@@ -530,521 +468,158 @@
     }
   })();
 
-  // Sparkles on sun hover — lingering + full-screen bouncing
-const sunHotspot = document.getElementById('hs-sun');
+  // ---- Particle system factory ----
+  function makeParticleSystem({ hotspot, cssClass, max, interval, burstCount, burstDelay, spawn, update }) {
+    if (!hotspot) return;
+    const pool = [];
+    let timer = null, raf = null, last = performance.now();
 
-let sparkleTimer = null;
-let sparkleRAF = null;
-let lastSparkleTime = performance.now();
-
-const sparkleImages = ['assets/spark.png', 'assets/Star.png'];
-const sparkles = [];
-
-const MAX_SPARKLES = 45;
-
-function spawnSparkle() {
-  if (sparkles.length >= MAX_SPARKLES) {
-    const old = sparkles.shift();
-    old.el.remove();
-  }
-
-  const sunRect = sunHotspot.getBoundingClientRect();
-
-  const cx = sunRect.left + sunRect.width * 0.5;
-  const cy = sunRect.top + sunRect.height * 0.45;
-
-  const r = (Math.random() * 0.38 + 0.05) * sunRect.width;
-  const a0 = Math.random() * Math.PI * 2;
-
-  const x = cx + Math.cos(a0) * r;
-  const y = cy + Math.sin(a0) * r;
-
-  const size = 12 + Math.random() * 22;
-  const angle = Math.random() * Math.PI * 2;
-  const speed = 55 + Math.random() * 80;
-
-  const el = document.createElement('div');
-  el.className = 'sparkle';
-
-  const img = document.createElement('img');
-  img.src = sparkleImages[Math.floor(Math.random() * sparkleImages.length)];
-  img.alt = '';
-  img.draggable = false;
-
-  el.appendChild(img);
-  document.body.appendChild(el);
-
-  const life = 3.5 + Math.random() * 2.2;
-
-  const sparkle = {
-    el,
-    x,
-    y,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed - 25,
-    size,
-    life,
-    maxLife: life,
-    rotation: Math.random() * 360,
-    rotationSpeed: -90 + Math.random() * 180
-  };
-
-  el.style.width = size + 'px';
-  el.style.height = size + 'px';
-
-  sparkles.push(sparkle);
-
-  if (!sparkleRAF) {
-    lastSparkleTime = performance.now();
-    sparkleRAF = requestAnimationFrame(updateSparkles);
-  }
-}
-
-function updateSparkles(now) {
-  const dt = Math.min((now - lastSparkleTime) / 1000, 0.033);
-  lastSparkleTime = now;
-
-  const boundsW = window.innerWidth;
-  const boundsH = window.innerHeight;
-
-  for (let i = sparkles.length - 1; i >= 0; i--) {
-    const s = sparkles[i];
-
-    s.x += s.vx * dt;
-    s.y += s.vy * dt;
-    s.rotation += s.rotationSpeed * dt;
-    s.life -= dt;
-
-    // Bounce from full screen edges
-    if (s.x <= 0) {
-      s.x = 0;
-      s.vx *= -0.86;
+    function spawnOne() {
+      if (pool.length >= max) pool.shift().el.remove();
+      const p = spawn(hotspot.getBoundingClientRect());
+      const el = document.createElement('div');
+      el.className = 'particle ' + cssClass;
+      const img = document.createElement('img');
+      img.alt = ''; img.draggable = false; img.src = p.src;
+      el.style.cssText = `width:${p.size}px;height:${p.size}px`;
+      el.appendChild(img);
+      document.body.appendChild(el);
+      p.el = el;
+      pool.push(p);
+      if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
     }
 
-    if (s.x + s.size >= boundsW) {
-      s.x = boundsW - s.size;
-      s.vx *= -0.86;
-    }
-
-    if (s.y <= 0) {
-      s.y = 0;
-      s.vy *= -0.86;
-    }
-
-    if (s.y + s.size >= boundsH) {
-      s.y = boundsH - s.size;
-      s.vy *= -0.86;
-    }
-
-    // soft floaty slowing
-    s.vx *= 0.996;
-    s.vy *= 0.996;
-
-    const opacity = Math.max(s.life / s.maxLife, 0);
-    const scale = 0.65 + opacity * 0.45;
-
-    s.el.style.opacity = opacity;
-    s.el.style.transform =
-      `translate(${s.x}px, ${s.y}px) scale(${scale}) rotate(${s.rotation}deg)`;
-
-    if (s.life <= 0) {
-      s.el.remove();
-      sparkles.splice(i, 1);
-    }
-  }
-
-  if (sparkles.length > 0) {
-    sparkleRAF = requestAnimationFrame(updateSparkles);
-  } else {
-    sparkleRAF = null;
-  }
-}
-
-sunHotspot.addEventListener('mouseenter', () => {
-  spawnSparkle();
-  sparkleTimer = setInterval(spawnSparkle, 95);
-});
-
-sunHotspot.addEventListener('mouseleave', () => {
-  clearInterval(sparkleTimer);
-  sparkleTimer = null;
-
-  for (let i = 0; i < 6; i++) {
-    setTimeout(spawnSparkle, i * 55);
-  }
-});
-
-
-// ---- Smoke on sound-board hover ----
-const audioHotspot = document.getElementById('hs-audio');
-
-let smokeTimer = null;
-let smokeRAF = null;
-let lastSmokeTime = performance.now();
-
-const smokes = [];
-const MAX_SMOKES = 10;
-
-function spawnSmoke() {
-  if (!audioHotspot) return;
-
-  if (smokes.length >= MAX_SMOKES) {
-    const old = smokes.shift();
-    old.el.remove();
-  }
-
-  const rect = audioHotspot.getBoundingClientRect();
-
-  // spawn from upper-middle area of the sound board island
-  const x = rect.left + rect.width * (0.42 + Math.random() * 0.16);
-  const y = rect.top + rect.height * (0.18 + Math.random() * 0.12);
-
-  const size = 60 + Math.random() * 40;
-  const drift = -18 + Math.random() * 36;
-  const rise = 26 + Math.random() * 55;
-  const life = 1.8 + Math.random() * 2.4;
-
-  const el = document.createElement('div');
-  el.className = 'smoke-puff';
-
-  const img = document.createElement('img');
-  img.src = 'assets/smoke.png';
-  img.alt = '';
-  img.draggable = false;
-
-  el.appendChild(img);
-  document.body.appendChild(el);
-
-  el.style.width = size + 'px';
-  el.style.height = size + 'px';
-
-  const smoke = {
-    el,
-    x,
-    y,
-    vx: drift,
-    vy: -rise,
-    size,
-    life,
-    maxLife: life,
-    scale: 0.72 + Math.random() * 0.18,
-    scaleGrow: 0.18 + Math.random() * 0.22,
-    rot: -10 + Math.random() * 20,
-    rotSpeed: -8 + Math.random() * 16
-  };
-
-  smokes.push(smoke);
-
-  if (!smokeRAF) {
-    lastSmokeTime = performance.now();
-    smokeRAF = requestAnimationFrame(updateSmoke);
-  }
-}
-
-function updateSmoke(now) {
-  const dt = Math.min((now - lastSmokeTime) / 1000, 0.033);
-  lastSmokeTime = now;
-
-  for (let i = smokes.length - 1; i >= 0; i--) {
-    const s = smokes[i];
-
-    s.x += s.vx * dt;
-    s.y += s.vy * dt;
-    s.rot += s.rotSpeed * dt;
-    s.life -= dt;
-
-    // soften movement over time
-    s.vx *= 0.994;
-    s.vy *= 0.997;
-
-    const t = 1 - (s.life / s.maxLife); // 0 -> 1
-    let opacity;
-
-    if (t < 0.15) {
-      opacity = (t / 0.15) * 0.72;
-    } else if (t < 0.65) {
-      opacity = 0.72;
-    } else {
-      opacity = ((1 - t) / 0.35) * 0.72;
-    }
-
-    const scale = s.scale + t * s.scaleGrow;
-
-    s.el.style.opacity = Math.max(opacity, 0);
-    s.el.style.transform =
-      `translate(${s.x}px, ${s.y}px) scale(${scale}) rotate(${s.rot}deg)`;
-
-    if (s.life <= 0) {
-      s.el.remove();
-      smokes.splice(i, 1);
-    }
-  }
-
-  if (smokes.length > 0) {
-    smokeRAF = requestAnimationFrame(updateSmoke);
-  } else {
-    smokeRAF = null;
-  }
-}
-
-audioHotspot?.addEventListener('mouseenter', () => {
-  spawnSmoke();
-  smokeTimer = setInterval(spawnSmoke, 270);
-});
-
-audioHotspot?.addEventListener('mouseleave', () => {
-  clearInterval(smokeTimer);
-  smokeTimer = null;
-
-  // slight lingering burst, like the sparkles
-  for (let i = 0; i < 4; i++) {
-    setTimeout(spawnSmoke, i * 90);
-  }
-});
-
-  // ---- Hearts on main island hover ----
-  const mainHotspot = document.getElementById('hs-main');
-
-  let heartTimer = null;
-  let heartRAF = null;
-  let lastHeartTime = performance.now();
-
-  const hearts = [];
-  const MAX_HEARTS = 30;
-
-  function spawnHeart() {
-    if (hearts.length >= MAX_HEARTS) {
-      const old = hearts.shift();
-      old.el.remove();
-    }
-
-    const rect = mainHotspot.getBoundingClientRect();
-
-    const x = rect.left + rect.width * (0.2 + Math.random() * 0.6);
-    const y = rect.top + rect.height * (0.3 + Math.random() * 0.5);
-
-    const size = 18 + Math.random() * 22;
-    const angle = -Math.PI / 2 + (-0.6 + Math.random() * 1.2);
-    const speed = 60 + Math.random() * 80;
-
-    const el = document.createElement('div');
-    el.className = 'heart-particle';
-
-    const img = document.createElement('img');
-    img.src = 'assets/heart.png';
-    img.alt = '';
-    img.draggable = false;
-
-    el.appendChild(img);
-    document.body.appendChild(el);
-
-    el.style.width = size + 'px';
-    el.style.height = size + 'px';
-
-    // pop-out: start small, overshoot big, then shrink to nothing
-    const life = 0.55 + Math.random() * 0.3;
-
-    hearts.push({
-      el,
-      x,
-      y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size,
-      life,
-      maxLife: life,
-      rotation: Math.random() * 360,
-      rotationSpeed: -60 + Math.random() * 120
-    });
-
-    if (!heartRAF) {
-      lastHeartTime = performance.now();
-      heartRAF = requestAnimationFrame(updateHearts);
-    }
-  }
-
-  function updateHearts(now) {
-    const dt = Math.min((now - lastHeartTime) / 1000, 0.033);
-    lastHeartTime = now;
-
-    for (let i = hearts.length - 1; i >= 0; i--) {
-      const h = hearts[i];
-
-      h.x += h.vx * dt;
-      h.y += h.vy * dt;
-      h.rotation += h.rotationSpeed * dt;
-      h.life -= dt;
-
-      h.vx *= 0.97;
-      h.vy *= 0.97;
-
-      // t goes 0 -> 1 over lifetime
-      const t = 1 - (h.life / h.maxLife);
-
-      // pop curve: scale up fast then shrink — peaks around t=0.35
-      const scale = t < 0.35
-        ? t / 0.35 * 1.4          // 0 -> 1.4 (overshoot)
-        : 1.4 * (1 - (t - 0.35) / 0.65); // 1.4 -> 0
-
-      // opacity: full until 60% through, then snap-fade
-      const opacity = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
-
-      h.el.style.opacity = Math.max(opacity, 0);
-      h.el.style.transform =
-        `translate(${h.x}px, ${h.y}px) scale(${Math.max(scale, 0)}) rotate(${h.rotation}deg)`;
-
-      if (h.life <= 0) {
-        h.el.remove();
-        hearts.splice(i, 1);
+    function tick(now) {
+      const dt = Math.min((now - last) / 1000, 0.033);
+      last = now;
+      for (let i = pool.length - 1; i >= 0; i--) {
+        const p = pool[i];
+        p.life -= dt;
+        if (p.life <= 0) { p.el.remove(); pool.splice(i, 1); continue; }
+        update(p, dt);
       }
+      raf = pool.length > 0 ? requestAnimationFrame(tick) : null;
     }
 
-    if (hearts.length > 0) {
-      heartRAF = requestAnimationFrame(updateHearts);
-    } else {
-      heartRAF = null;
-    }
-  }
-
-  // ---- Speed particles on reports island hover ----
-  const reportsHotspot = document.getElementById('hs-reports');
-
-  let speedTimer = null;
-  let speedRAF = null;
-  let lastSpeedTime = performance.now();
-
-  const speeds = [];
-  const MAX_SPEEDS = 25;
-
-  function spawnSpeed() {
-    if (speeds.length >= MAX_SPEEDS) {
-      const old = speeds.shift();
-      old.el.remove();
-    }
-
-    const rect = reportsHotspot.getBoundingClientRect();
-
-    const x = rect.left + rect.width * (0.2 + Math.random() * 0.6);
-    const y = rect.top + rect.height * (0.2 + Math.random() * 0.6);
-
-    const size = 20 + Math.random() * 20;
-    const life = 0.7 + Math.random() * 0.4;
-
-    // shoot mostly outward/upward
-    const baseAngle = -Math.PI / 2 + (-0.9 + Math.random() * 1.8);
-    const speed = 90 + Math.random() * 100;
-
-    const el = document.createElement('div');
-    el.className = 'speed-particle';
-
-    const img = document.createElement('img');
-    img.src = 'assets/speed.png';
-    img.alt = '';
-    img.draggable = false;
-
-    el.appendChild(img);
-    document.body.appendChild(el);
-
-    el.style.width = size + 'px';
-    el.style.height = size + 'px';
-
-    speeds.push({
-      el,
-      x,
-      y,
-      vx: Math.cos(baseAngle) * speed,
-      vy: Math.sin(baseAngle) * speed,
-      size,
-      life,
-      maxLife: life,
-      // zig-zag: perpendicular oscillation
-      zigFreq: 6 + Math.random() * 6,       // oscillations per second
-      zigAmp: 55 + Math.random() * 70,       // px/s lateral amplitude
-      zigPhase: Math.random() * Math.PI * 2,
-      // perpendicular axis (rotate base direction 90°)
-      perpX: -Math.sin(baseAngle),
-      perpY:  Math.cos(baseAngle),
-      rotation: Math.random() * 360,
-      rotSpeed: -80 + Math.random() * 160
+    hotspot.addEventListener('mouseenter', () => { spawnOne(); timer = setInterval(spawnOne, interval); });
+    hotspot.addEventListener('mouseleave', () => {
+      clearInterval(timer); timer = null;
+      for (let i = 0; i < burstCount; i++) setTimeout(spawnOne, i * burstDelay);
     });
-
-    if (!speedRAF) {
-      lastSpeedTime = performance.now();
-      speedRAF = requestAnimationFrame(updateSpeeds);
-    }
   }
 
-  function updateSpeeds(now) {
-    const dt = Math.min((now - lastSpeedTime) / 1000, 0.033);
-    lastSpeedTime = now;
-
-    for (let i = speeds.length - 1; i >= 0; i--) {
-      const s = speeds[i];
-
-      // zig-zag via sinusoidal perpendicular velocity
-      const elapsed = s.maxLife - s.life;
-      const zigV = Math.sin(elapsed * s.zigFreq * Math.PI * 2 + s.zigPhase) * s.zigAmp;
-
-      s.x += (s.vx + s.perpX * zigV) * dt;
-      s.y += (s.vy + s.perpY * zigV) * dt;
-      s.rotation += s.rotSpeed * dt;
-      s.life -= dt;
-
-      s.vx *= 0.97;
-      s.vy *= 0.97;
-
-      const t = 1 - (s.life / s.maxLife);
-      // quick scale-in, hold, then shrink out
-      const scale = t < 0.2
-        ? t / 0.2
-        : t < 0.7
-          ? 1
-          : 1 - (t - 0.7) / 0.3;
-
-      const opacity = t < 0.15 ? t / 0.15 : t < 0.75 ? 1 : 1 - (t - 0.75) / 0.25;
-
-      s.el.style.opacity = Math.max(opacity, 0);
-      s.el.style.transform =
-        `translate(${s.x}px, ${s.y}px) scale(${Math.max(scale, 0)}) rotate(${s.rotation}deg)`;
-
-      if (s.life <= 0) {
-        s.el.remove();
-        speeds.splice(i, 1);
-      }
-    }
-
-    if (speeds.length > 0) {
-      speedRAF = requestAnimationFrame(updateSpeeds);
-    } else {
-      speedRAF = null;
-    }
-  }
-
-  reportsHotspot.addEventListener('mouseenter', () => {
-    spawnSpeed();
-    speedTimer = setInterval(spawnSpeed, 110);
-  });
-
-  reportsHotspot.addEventListener('mouseleave', () => {
-    clearInterval(speedTimer);
-    speedTimer = null;
-
-    for (let i = 0; i < 5; i++) {
-      setTimeout(spawnSpeed, i * 60);
+  // ---- Sparkles (sun) ----
+  makeParticleSystem({
+    hotspot: document.getElementById('hs-sun'),
+    cssClass: 'sparkle', max: 45, interval: 95, burstCount: 6, burstDelay: 55,
+    spawn(rect) {
+      const cx = rect.left + rect.width * 0.5, cy = rect.top + rect.height * 0.45;
+      const r = (Math.random() * 0.38 + 0.05) * rect.width, a = Math.random() * Math.PI * 2;
+      const angle = Math.random() * Math.PI * 2, speed = 55 + Math.random() * 80;
+      const life = 3.5 + Math.random() * 2.2, size = 12 + Math.random() * 22;
+      return {
+        src: Math.random() < 0.5 ? 'assets/spark.png' : 'assets/Star.png',
+        x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, size,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 25,
+        life, maxLife: life, rot: Math.random() * 360, rotV: -90 + Math.random() * 180
+      };
+    },
+    update(p, dt) {
+      const W = window.innerWidth, H = window.innerHeight;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.rotV * dt;
+      if (p.x <= 0)          { p.x = 0;          p.vx *= -0.86; }
+      if (p.x + p.size >= W) { p.x = W - p.size; p.vx *= -0.86; }
+      if (p.y <= 0)          { p.y = 0;          p.vy *= -0.86; }
+      if (p.y + p.size >= H) { p.y = H - p.size; p.vy *= -0.86; }
+      p.vx *= 0.996; p.vy *= 0.996;
+      const op = Math.max(p.life / p.maxLife, 0);
+      p.el.style.opacity = op;
+      p.el.style.transform = `translate(${p.x}px,${p.y}px) scale(${0.65 + op * 0.45}) rotate(${p.rot}deg)`;
     }
   });
 
-  mainHotspot.addEventListener('mouseenter', () => {
-    spawnHeart();
-    heartTimer = setInterval(spawnHeart, 120);
+  // ---- Smoke (audio island) ----
+  makeParticleSystem({
+    hotspot: document.getElementById('hs-audio'),
+    cssClass: 'smoke-puff', max: 10, interval: 270, burstCount: 4, burstDelay: 90,
+    spawn(rect) {
+      const life = 1.8 + Math.random() * 2.4, size = 60 + Math.random() * 40;
+      return {
+        src: 'assets/Smoke.png', size,
+        x: rect.left + rect.width  * (0.42 + Math.random() * 0.16),
+        y: rect.top  + rect.height * (0.18 + Math.random() * 0.12),
+        vx: -18 + Math.random() * 36, vy: -(26 + Math.random() * 55),
+        life, maxLife: life,
+        scale: 0.72 + Math.random() * 0.18, scaleGrow: 0.18 + Math.random() * 0.22,
+        rot: -10 + Math.random() * 20, rotV: -8 + Math.random() * 16
+      };
+    },
+    update(p, dt) {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.rotV * dt;
+      p.vx *= 0.994; p.vy *= 0.997;
+      const t = 1 - p.life / p.maxLife;
+      const op = t < 0.15 ? (t / 0.15) * 0.72 : t < 0.65 ? 0.72 : ((1 - t) / 0.35) * 0.72;
+      p.el.style.opacity = Math.max(op, 0);
+      p.el.style.transform = `translate(${p.x}px,${p.y}px) scale(${p.scale + t * p.scaleGrow}) rotate(${p.rot}deg)`;
+    }
   });
 
-  mainHotspot.addEventListener('mouseleave', () => {
-    clearInterval(heartTimer);
-    heartTimer = null;
+  // ---- Hearts (main island) ----
+  makeParticleSystem({
+    hotspot: document.getElementById('hs-main'),
+    cssClass: 'heart-particle', max: 30, interval: 120, burstCount: 5, burstDelay: 60,
+    spawn(rect) {
+      const angle = -Math.PI / 2 + (-0.6 + Math.random() * 1.2), speed = 60 + Math.random() * 80;
+      const life = 0.55 + Math.random() * 0.3, size = 18 + Math.random() * 22;
+      return {
+        src: 'assets/heart.png', size,
+        x: rect.left + rect.width  * (0.2 + Math.random() * 0.6),
+        y: rect.top  + rect.height * (0.3 + Math.random() * 0.5),
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        life, maxLife: life, rot: Math.random() * 360, rotV: -60 + Math.random() * 120
+      };
+    },
+    update(p, dt) {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.rotV * dt;
+      p.vx *= 0.97; p.vy *= 0.97;
+      const t = 1 - p.life / p.maxLife;
+      const scale = t < 0.35 ? t / 0.35 * 1.4 : 1.4 * (1 - (t - 0.35) / 0.65);
+      const op = t < 0.6 ? 1 : 1 - (t - 0.6) / 0.4;
+      p.el.style.opacity = Math.max(op, 0);
+      p.el.style.transform = `translate(${p.x}px,${p.y}px) scale(${Math.max(scale, 0)}) rotate(${p.rot}deg)`;
+    }
+  });
 
-    for (let i = 0; i < 5; i++) {
-      setTimeout(spawnHeart, i * 60);
+  // ---- Speed lines (reports island) ----
+  makeParticleSystem({
+    hotspot: document.getElementById('hs-reports'),
+    cssClass: 'speed-particle', max: 25, interval: 110, burstCount: 5, burstDelay: 60,
+    spawn(rect) {
+      const a = -Math.PI / 2 + (-0.9 + Math.random() * 1.8), speed = 90 + Math.random() * 100;
+      const life = 0.7 + Math.random() * 0.4, size = 20 + Math.random() * 20;
+      return {
+        src: 'assets/Speed.png', size,
+        x: rect.left + rect.width  * (0.2 + Math.random() * 0.6),
+        y: rect.top  + rect.height * (0.2 + Math.random() * 0.6),
+        vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+        life, maxLife: life,
+        zigFreq: 6 + Math.random() * 6, zigAmp: 55 + Math.random() * 70,
+        zigPhase: Math.random() * Math.PI * 2,
+        perpX: -Math.sin(a), perpY: Math.cos(a),
+        rot: Math.random() * 360, rotV: -80 + Math.random() * 160
+      };
+    },
+    update(p, dt) {
+      const elapsed = p.maxLife - p.life;
+      const zigV = Math.sin(elapsed * p.zigFreq * Math.PI * 2 + p.zigPhase) * p.zigAmp;
+      p.x += (p.vx + p.perpX * zigV) * dt;
+      p.y += (p.vy + p.perpY * zigV) * dt;
+      p.rot += p.rotV * dt; p.vx *= 0.97; p.vy *= 0.97;
+      const t = 1 - p.life / p.maxLife;
+      const scale = t < 0.2 ? t / 0.2 : t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
+      const op = t < 0.15 ? t / 0.15 : t < 0.75 ? 1 : 1 - (t - 0.75) / 0.25;
+      p.el.style.opacity = Math.max(op, 0);
+      p.el.style.transform = `translate(${p.x}px,${p.y}px) scale(${Math.max(scale, 0)}) rotate(${p.rot}deg)`;
     }
   });
 
