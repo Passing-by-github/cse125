@@ -186,6 +186,33 @@
       50%      { filter: brightness(1.08); }
     }
 
+    /* ---- Ship ---- */
+    .ship-link {
+      position: fixed;
+      right: 7vw;
+      top: 14vh;
+      z-index: 5;
+      display: block;
+      width: clamp(90px, 10vw, 160px);
+      animation: ship-float 3.8s ease-in-out infinite;
+      transition: filter 220ms ease, transform 220ms ease;
+      cursor: pointer;
+    }
+    .ship-link img {
+      width: 100%;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .ship-link:hover { filter: drop-shadow(0 0 12px rgba(180,220,255,.8)); }
+    @keyframes ship-float {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50%       { transform: translateY(-12px) rotate(2deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ship-link { animation: none; }
+    }
+
     /* ---- Sparkles ---- */
     .sparkle {
   position: fixed;
@@ -225,6 +252,9 @@
       width: 100%;
       height: 100%;
       display: block;
+      filter:
+        drop-shadow(0 0 5px rgba(255, 80, 120, .85))
+        drop-shadow(0 0 14px rgba(255, 30, 80, .45));
     }
 
     /* ---- Speed lines ---- */
@@ -241,6 +271,9 @@
       width: 100%;
       height: 100%;
       display: block;
+      filter:
+        drop-shadow(0 0 5px rgba(80, 220, 255, .85))
+        drop-shadow(0 0 14px rgba(30, 160, 255, .45));
     }
 
     /* smoke effect */ 
@@ -354,6 +387,10 @@
 
     </nav>
   </main>
+
+  <a class="ship-link" href="https://www.youtube.com/live/Woo8vHVfK8s" target="_blank" rel="noopener noreferrer" aria-label="spaceship (opens in new tab)">
+    <img src="assets/ship.png" alt="spaceship" draggable="false">
+  </a>
 
   <div class="footer-hint">hover on a piece</div>
   
