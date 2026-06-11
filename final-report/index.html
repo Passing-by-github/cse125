@@ -67,7 +67,6 @@
     }
     .toc ol {
       list-style: none;
-      border-left: 1px solid rgba(255,255,255,.1);
       padding-left: 12px;
     }
     .toc li { margin-bottom: 5px; }
@@ -208,6 +207,36 @@
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+
+    /* ── dead easter egg ── */
+    .dead-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 60px 0 20px;
+      cursor: default;
+    }
+    .dead-img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      transform-origin: center 75%;
+      transition: transform 300ms cubic-bezier(.2,.7,.3,1.2);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .dead-wrap:hover .dead-img {
+      transform: rotate(22deg);
+    }
+    .dead-qmark {
+      font-size: 1.4rem;
+      color: rgba(255,255,255,.25);
+      transition: color 300ms ease;
+    }
+    .dead-wrap:hover .dead-qmark {
+      color: rgba(255,255,255,.55);
+    }
   </style>
 </head>
 <body>
@@ -240,7 +269,6 @@
       <li><a href="#q-courses">Best Courses</a></li>
       <li><a href="#q-valuable">Most Valuable</a></li>
       <li><a href="#q-screenshots">Screenshots</a></li>
-      <li><a href="#part-c">Archiving</a></li>
       <li><a href="#q-pizza">Pizza Celebration</a></li>
       <li><a href="#q-advice">Advice</a></li>
       <li><a href="#q-suggestions">Suggestions</a></li>
@@ -572,24 +600,13 @@
       <div class="q-label">question 18</div>
       <p class="q-text">Please post four final screenshots of your game.</p>
 
-      <div class="response">
-        <img class="pfp" src="luna.png" alt="Luna">
-        <div class="response-body">
-          <div class="response-name">Luna</div>
-          <p class="response-text">I got this lol. Give me some time.</p>
-        </div>
-      </div>
-    </div>
+      
+      
 
+  
+    
     <!-- ═══════════════════════════════════════ PART C -->
-    <h2 class="part" id="part-c">C. Archiving</h2>
-
-    <div class="q-block">
-      <p class="note">While external sites like Notion are convenient, we do not have any control over how long those sites continue to serve content. So we would like to host a static snapshot of your group's pages on this server. If you already hosted your group site (and all of its content) on cse125.ucsd.edu, then you're done! If you used Notion, please follow the instructions for creating a snapshot of your pages — only do this step once you have completed the final report.</p>
-    </div>
-
-    <!-- ═══════════════════════════════════════ PART D -->
-    <h2 class="part" id="part-d">D. Optional Feedback</h2>
+    <h2 class="part" id="part-c">C. Optional Feedback</h2>
 
     <div class="q-block" id="q-pizza">
       <div class="q-label">question 19</div>
@@ -659,6 +676,33 @@
       </div>
     </div>
 
+    <div class="dead-wrap" id="dead-egg" role="button" tabindex="0" aria-label="Open goodbye page">
+      <img class="dead-img" src="dead.png" alt="Open goodbye page">
+      <span class="dead-qmark">?</span>
+    </div>
+
   </main>
+
+  <script>
+    const goodbyeUrl = '../goodbye/';
+
+    function openGoodbye() {
+      window.location.href = goodbyeUrl;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 't' || e.key === 'T') {
+        openGoodbye();
+      }
+    });
+
+    document.getElementById('dead-egg')?.addEventListener('click', openGoodbye);
+    document.getElementById('dead-egg')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openGoodbye();
+      }
+    });
+  </script>
 </body>
 </html>

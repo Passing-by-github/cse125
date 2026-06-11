@@ -211,6 +211,7 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .ship-link { animation: none; }
+      .player_heads img { display: none;}
     }
 
     /* ---- Particles (shared base) ---- */
@@ -233,6 +234,9 @@
     .speed-particle img {
       filter: drop-shadow(0 0 5px rgba(80,220,255,.85))
               drop-shadow(0 0 14px rgba(30,160,255,.45));
+    }
+    .player_heads img {
+      filter: drop-shadow(0 0 4px rgba(255,255,255,.85));
     }
     .smoke-puff { z-index: 18; }
     .smoke-puff img {
@@ -326,7 +330,7 @@
     </nav>
   </main>
 
-  <a class="ship-link" href="https://www.youtube.com/live/Woo8vHVfK8s" target="_blank" rel="noopener noreferrer" aria-label="spaceship (opens in new tab)">
+  <a class="ship-link" id="ship-link" href="https://www.youtube.com/live/Woo8vHVfK8s" target="_blank" rel="noopener noreferrer" aria-label="spaceship (opens in new tab)">
     <img src="assets/ship.png" alt="spaceship" draggable="false">
   </a>
 
@@ -620,6 +624,37 @@
       const op = t < 0.15 ? t / 0.15 : t < 0.75 ? 1 : 1 - (t - 0.75) / 0.25;
       p.el.style.opacity = Math.max(op, 0);
       p.el.style.transform = `translate(${p.x}px,${p.y}px) scale(${Math.max(scale, 0)}) rotate(${p.rot}deg)`;
+    }
+  });
+
+
+  // ---- player-heads (ship) ----
+  makeParticleSystem({
+    hotspot: document.getElementById('ship-link'),
+    cssClass: 'player_heads', max: 45, interval: 95, burstCount: 6, burstDelay: 55,
+    spawn(rect) {
+      const cx = rect.left + rect.width * 0.5, cy = rect.top + rect.height * 0.45;
+      const r = (Math.random() * 0.38 + 0.05) * rect.width, a = Math.random() * Math.PI * 2;
+      const angle = Math.random() * Math.PI * 2, speed = 55 + Math.random() * 80;
+      const life = 3.5 + Math.random() * 2.2, size = 12 + Math.random() * 22;
+      return {
+        src: `assets/player_${1 + Math.floor(Math.random() * 4)}.png`, size,
+        x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, size,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 25,
+        life, maxLife: life, rot: Math.random() * 360, rotV: -90 + Math.random() * 180
+      };
+    },
+    update(p, dt) {
+      const W = window.innerWidth, H = window.innerHeight;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.rotV * dt;
+      if (p.x <= 0)          { p.x = 0;          p.vx *= -0.86; }
+      if (p.x + p.size >= W) { p.x = W - p.size; p.vx *= -0.86; }
+      if (p.y <= 0)          { p.y = 0;          p.vy *= -0.86; }
+      if (p.y + p.size >= H) { p.y = H - p.size; p.vy *= -0.86; }
+      p.vx *= 0.996; p.vy *= 0.996;
+      const op = Math.max(p.life / p.maxLife, 0);
+      p.el.style.opacity = op;
+      p.el.style.transform = `translate(${p.x}px,${p.y}px) scale(${0.65 + op * 0.45}) rotate(${p.rot}deg)`;
     }
   });
 
