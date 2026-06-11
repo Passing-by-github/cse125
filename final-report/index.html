@@ -7,45 +7,658 @@
   <meta name="theme-color" content="#08153d">
   <link rel="icon" href="../favicon.ico" sizes="any">
   <link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
   <link rel="preload" href="../fonts/KiwiSoda.woff2" as="font" type="font/woff2" crossorigin>
   <style>
-    @font-face { font-family: 'KiwiSoda'; src: url('../fonts/KiwiSoda.woff2') format('woff2'); font-display: swap; }
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      font-family: 'KiwiSoda', system-ui, sans-serif; color: #fff; overflow: hidden;
-      background: radial-gradient(ellipse 80% 50% at 30% 25%, rgba(50,80,170,.3), transparent 70%),
-        linear-gradient(180deg, #08153d 0%, #142560 55%, #1c3070 100%);
+    @font-face {
+      font-family: 'KiwiSoda';
+      src: url('../fonts/KiwiSoda.woff2') format('woff2');
+      font-display: swap;
     }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'KiwiSoda', system-ui, sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(255,210,80,.12), transparent 28%),
+        radial-gradient(ellipse 70% 55% at 42% 52%, rgba(75,105,255,.35), transparent 65%),
+        linear-gradient(180deg, #080026 0%, #12007a 48%, #252cff 100%);
+    }
+
+    /* ── fixed chrome ── */
     .back-link {
       position: fixed; top: 28px; left: 32px; font-size: 18px;
       color: rgba(255,255,255,.55); text-decoration: none;
-      letter-spacing: 0.04em; transition: color 200ms ease; z-index: 10;
+      letter-spacing: 0.04em; transition: color 200ms ease; z-index: 20;
+      text-shadow: 0 2px 12px rgba(0,0,0,.7);
     }
     .back-link:hover, .back-link:focus-visible { color: #ffd166; outline: none; }
-    .content {
-      position: absolute; inset: 0; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; gap: 1.2rem; padding: 0 20px;
+
+    .site-header {
+      position: fixed; top: 28px; right: 36px; text-align: right;
+      font-size: 22px; color: rgba(255,255,255,.9);
+      letter-spacing: 0.04em; z-index: 20;
+      text-shadow: 0 2px 14px rgba(0,0,0,.5);
+      pointer-events: none;
     }
-    .link {
-      font-family: 'KiwiSoda', system-ui, sans-serif;
-      font-size: clamp(2rem, 5vw, 3.5rem); color: #fff; text-decoration: none;
-      text-shadow: 0 2px 18px rgba(0,0,0,.9), 0 0 30px rgba(0,0,0,.7);
-      letter-spacing: 0.02em; padding: 0.2em 0.6em;
-      border-bottom: 3px solid transparent;
-      transition: border-color 260ms ease, color 260ms ease;
+    .site-header span {
+      display: block; font-size: 14px;
+      color: rgba(255,255,255,.5); margin-top: 3px;
     }
-    .link:hover, .link:focus-visible { color: #ffd166; border-bottom-color: #ffd166; outline: none; }
-    .coming-soon {
-      font-size: clamp(2.5rem, 8vw, 5rem);
-      text-shadow: 0 2px 18px rgba(0,0,0,.9), 0 0 40px rgba(0,0,0,.7);
+
+    /* ── TOC sidebar ── */
+    .toc {
+      position: fixed;
+      right: 36px;
+      top: 90px;
+      width: 200px;
+      z-index: 10;
+      pointer-events: auto;
     }
+    .toc-title {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,.35);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .toc ol {
+      list-style: none;
+      border-left: 1px solid rgba(255,255,255,.1);
+      padding-left: 12px;
+    }
+    .toc li { margin-bottom: 5px; }
+    .toc a {
+      font-size: 12px;
+      color: rgba(255,255,255,.4);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: color 160ms ease;
+    }
+    .toc a:hover { color: #ffd166; }
+
+    @media (max-width: 960px) { .toc { display: none; } }
+
+    /* ── page body ── */
+    .page {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 80px 32px 100px;
+    }
+
+    .report-title {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      color: #fff;
+      letter-spacing: 0.08em;
+      text-shadow: 0 2px 24px rgba(0,0,0,.6), 0 0 40px rgba(80,120,255,.3);
+      margin-bottom: 6px;
+    }
+    .report-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: 0.1em;
+      margin-bottom: 56px;
+    }
+
+    /* part divider */
+    .part {
+      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      color: #ffd166;
+      letter-spacing: 0.1em;
+      margin: 60px 0 28px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,209,102,.25);
+      text-shadow: 0 0 24px rgba(255,209,102,.3);
+    }
+
+    /* question block */
+    .q-block {
+      margin-bottom: 44px;
+    }
+    .q-label {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,.3);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .q-text {
+      font-size: clamp(1rem, 1.8vw, 1.25rem);
+      color: rgba(255,255,255,.85);
+      letter-spacing: 0.03em;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+
+    /* response */
+    .response {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      padding: 14px 16px 14px 14px;
+      background: rgba(255,255,255,.04);
+      border-radius: 6px;
+      border-left: 2px solid rgba(255,255,255,.1);
+      transition: background 200ms ease, border-color 200ms ease;
+    }
+    .response:hover {
+      background: rgba(255,255,255,.07);
+      border-left-color: rgba(255,209,102,.4);
+    }
+    .pfp {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,.2);
+    }
+    .pfp-blank {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px dashed rgba(255,255,255,.15);
+    }
+    .response-body { flex: 1; min-width: 0; }
+    .response-name {
+      font-size: 12px;
+      color: #ffd166;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+      text-shadow: 0 0 12px rgba(255,209,102,.3);
+    }
+    .response-text {
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      color: rgba(255,255,255,.75);
+      line-height: 1.75;
+      letter-spacing: 0;
+    }
+    .response-text code {
+      font-family: 'Courier New', monospace;
+      font-size: 11.5px;
+      background: rgba(255,255,255,.08);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: rgba(255,255,255,.85);
+      display: inline-block;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+    .response-text a { color: rgba(255,255,255,.6); }
+    .response-text a:hover { color: #ffd166; }
+
+    /* group / no-name response */
+    .response-name.group { color: rgba(255,255,255,.35); }
+
+    /* note box */
+    .note {
+      font-size: 13px;
+      color: rgba(255,255,255,.5);
+      line-height: 1.75;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 6px;
+      padding: 16px 20px;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
   </style>
 </head>
 <body>
+
   <a href="../" class="back-link">← back</a>
-  <main class="content">
-    <p class="coming-soon">coming soon :&gt;</p>
+
+  <div class="site-header">
+    cse 125 · group 1 · 2026
+    <span>final report</span>
+  </div>
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">// contents</div>
+    <ol>
+      <li><a href="#q-concept">Game Concept</a></li>
+      <li><a href="#q-design">Design</a></li>
+      <li><a href="#q-schedule">Schedule</a></li>
+      <li><a href="#q-devenv">Dev Environment</a></li>
+      <li><a href="#q-group">Group Mechanics</a></li>
+      <li><a href="#q-difficulty">Difficulty</a></li>
+      <li><a href="#q-proud">Proud Of</a></li>
+      <li><a href="#q-hardest">Hardest Problem</a></li>
+      <li><a href="#q-toolchain">Tool Chain</a></li>
+      <li><a href="#q-libraries">Libraries</a></li>
+      <li><a href="#q-llm">LLM Usage</a></li>
+      <li><a href="#q-language">Language</a></li>
+      <li><a href="#q-loc">Lines of Code</a></li>
+      <li><a href="#q-dynamics">Group Dynamics</a></li>
+      <li><a href="#q-differently">Do Differently</a></li>
+      <li><a href="#q-courses">Best Courses</a></li>
+      <li><a href="#q-valuable">Most Valuable</a></li>
+      <li><a href="#q-screenshots">Screenshots</a></li>
+      <li><a href="#part-c">Archiving</a></li>
+      <li><a href="#q-pizza">Pizza Celebration</a></li>
+      <li><a href="#q-advice">Advice</a></li>
+      <li><a href="#q-suggestions">Suggestions</a></li>
+      <li><a href="#q-other">Other Comments</a></li>
+    </ol>
+  </nav>
+
+  <main class="page">
+
+    <h1 class="report-title">Final Report</h1>
+    <p class="report-sub">CSE 125 &nbsp;·&nbsp; Group 1 &nbsp;·&nbsp; Spring 2026</p>
+
+    <!-- ═══════════════════════════════════════ PART A -->
+    <h2 class="part" id="part-a">A. Project Review</h2>
+
+    <div class="q-block" id="q-concept">
+      <div class="q-label">question 01</div>
+      <p class="q-text">Game concept — to what extent did your game concept change from initial concept to what you implemented?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Our game concept was pretty consistent once we had decided on it for the initial project spec, the only major gameplay change I would say is that we removed some collaborative aspects (tasks requiring multiple players to complete) in favor of more chaotic aspects.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">One major change is that we remove the randomized winning seats mechanic, which makes it more of a last-man-survival game. I do think it's a reasonable decision that fits with our chaotic gameplay better.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-design">
+      <div class="q-label">question 02</div>
+      <p class="q-text">Design — how does your final project design compare to the initial design?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">The final project design is very consistent with my initial design idea, the cartoon-ish low-poly render style, which I don't think anything is out of my expectations.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-schedule">
+      <div class="q-label">question 03</div>
+      <p class="q-text">Schedule — how does your final schedule compare with your projected schedule?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">During the weeks our progress is definitely delayed from our original plan on the To-do list; however, in the planning stage, we did predict that we would definitely be slower than the plan, so it's still within our expectations? One major thing was that art was making much progress until week 9 I finally put the map together, since I was mainly working on the graphic code. And we made significant progress in the final week, which is also kind of what I expected.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Some tasks definitely took longer than others (e.g. boss pathing, map building) because they were more challenging than expected, and some tasks were started on much later than expected (once again, boss pathing and map building, but also the audio) because of the unexpected amount of infrastructure required to even begin working on those parts.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ PART B -->
+    <h2 class="part" id="part-b">B. General Questions</h2>
+
+    <div class="q-block" id="q-devenv">
+      <div class="q-label">question 04</div>
+      <p class="q-text">Describe your development environment — tools, build workflow, platform support, tips for future groups.</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">We didn't support MacOS or Linux, which was initially problematic for me because I use Linux. This turned out to be not as much of a problem as I'd initially thought because I just camped in the basement all day 👍 (and squeezed as much of my other classes as I could into my off-campus time), but if you have group members who need to be remote (or understandably don't like being stuck in the basement for 8 hours a day), this may not be as good of a solution.<br><br>In terms of tools we did use, our repo was hosted on GitHub (obviously) and we used Visual Studio with vcpkg/CMake for packages and building, which was very convenient later on but more problematic in the beginning.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">I'm one of the lucky ones who's able to run the game on my gaming laptop, which made my development process so much easier because I can still do work at home.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-group">
+      <div class="q-label">question 05</div>
+      <p class="q-text">What group mechanics decisions worked out well, and which ones did not? Why?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">Worked well: Camping in the lab. As the weeks progress, I realized that our group doesn't need much micro-management since everyone is very active in communicating and working together, therefore a lot of logistical stuff was dropped (updating timeline, doing code post, writing pr details, etc). At the end, we still follow a very good code-review process pipeline (thanks to our pr master), which I'm glad of.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Working well: seconding camping in the lab, as well as getting to know a lot of the code that you aren't writing — it's great for building team spirit. And snacks.<br><br>Not working so well: we had difficulty separating tasks at the beginning (outside of Luna camping the entire graphics aspect) so there were issues with overlap and people doing the same thing in different ways. We additionally had issues where task separation wasn't as good as we thought it would be (e.g. a task depending on someone else's task, but they were busy with other classes, etc); greater flexibility with who does what and taking over tasks might've helped earlier on.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-difficulty">
+      <div class="q-label">question 06</div>
+      <p class="q-text">Which aspects of the implementation were more difficult than expected, and which were easier? Why?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">As someone who doesn't really play video games, I was surprised by the difficulty of implementing the boss (two weeks straight of unsatisfying boss pathing and/or boss having a seizure). The audio was easier than expected despite everyone telling me it would be easy. Something I expected to be hard but was still harder than I thought was actually testing my changes (especially audio triggers on certain events) because I had severe skill issues.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-proud">
+      <div class="q-label">question 07</div>
+      <p class="q-text">Which aspects of the project are you particularly proud of? Why?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">Every part :)</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">From a finished product point of view, the audio was a lot of fun and added a lot to the game in proportion to the amount of code I had to write. From a developer perspective, I'm pretty proud of how the system turned out as a whole.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-hardest">
+      <div class="q-label">question 08</div>
+      <p class="q-text">What was the most difficult software problem you faced, and how did you overcome it?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">The random lagging on my laptop? Turns out to be a 1-line network code error that Claude's code spent 20 minutes to figure out for me.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">The random lagging was never an actual problem for me because I had too many skill issues to attempt playing the game. Jokes aside, the code I worked on was never particularly difficult and we didn't really run into any game-breaking bugs — the greatest difficulty was for our flashbang effect: I wanted to pause the background music but I couldn't figure out how. It turned out that checking if FMOD isn't playing a sound isn't sufficient to determine that it's finished playing; the <code>FMOD_STUDIO_PLAYBACK_STOPPED</code> status exists for this very purpose.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-toolchain">
+      <div class="q-label">question 09</div>
+      <p class="q-text">Detail your tool chain for modeling, exporting, and loading meshes, textures, and animations.</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">For assimp (model loading) Luna can probably give more in-depth tips, but <a href="https://learnopengl.com/Model-Loading/Assimp" target="_blank" rel="noopener">learnopengl.com/Model-Loading/Assimp</a> and the official Assimp documentation were the sources I used.<br><br>For audio, we used FMOD, which was pretty intuitive with many tutorials available online. The only thing that took a little bit was setting global parameters (which you set from the audio system object) vs. setting local parameters (which you set from the event instance object).</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">We actually used mostly tinygltf to replace Assimp in later stages of the model/animation loading. Assimp is still used for glb model loading and parsing the file, but it might reorder vertices that would mess up with the joint weight of the skeletons. Tinygltf is used on top of assimp to read the GLB Skeletons. It also reads the VRM model extension, which allows us to add the mToon shader effect from the models.<br><br>I think using VRM material is one thing I did that kind of stood out from other groups: there is a Blender extension for it, and I found their shader code online and applied it into my game for the visual effect. Normally, it's commonly used in anime-style models such as Genshin Impact or Vtuber models.<br><br>An overview of the tool chain:<br><code>Blender (VRM material) → export .GLB → load model via tinygltf → mToon shader + shadow map → Draw() onto scene</code><br><br>If the model contains Skeleton Animation, it will go through the animator pipeline by loading the Skeleton + Skin + GLTFClips instead and getting drawn onto the scene.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-libraries">
+      <div class="q-label">question 10</div>
+      <p class="q-text">Which networking, physics, audio, or GUI libraries did you use — would you use them again?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">We used FMOD for audio, and I would say that for our purposes (many one-off spatial sound effects and different game phase bgm loops), it served pretty well. The documentation is a bit of a pain to use, but the simplicity of the API mitigates most of the pain.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">The most useful library we used is ImGui (Immediate Mode GUI), a debug/editor overlay that renders using our existing graphics API. We used it to build our editor window, debug window, and even UI and some graphic effects. It is especially useful as I made it into an Editor window that works together with our JSON maker tool — users are able to directly edit the map using the ImGui panels, read and write into our JSON files. I think the method calls and documentation are very intuitive, which makes it very easy to pick up and use during the development process.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-llm">
+      <div class="q-label">question 11</div>
+      <p class="q-text">If you used an LLM as part of your development process, what did you use it for and how well did it work?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">I used Copilot code completions during the latter half of the quarter after I switched lab machines and forgot to turn it off. I would say that it wasn't as helpful earlier on in the project (hence why I turned it off) when we were designing our system, but once we had well established patterns, it was pretty good at filling in repetitive code. I didn't consult LLMs directly, although that's more of a habit of tunnel vision and preferring to read documentation/sketchy Stack Overflow posts.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-language">
+      <div class="q-label">question 12</div>
+      <p class="q-text">If you used an implementation language other than C++, describe the environment, libraries, and tools.</p>
+
+      <div class="response">
+        <div class="pfp-blank"></div>
+        <div class="response-body">
+          <div class="response-name group">Group</div>
+          <p class="response-text">We used standard C++ and OpenGL for graphics.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-loc">
+      <div class="q-label">question 13</div>
+      <p class="q-text">How many lines of code did you write for your project?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">15,341 lines from 112 files. I used the PowerShell command:<br><code>(Get-ChildItem "src","include" -Recurse -File | Where-Object { $_.Extension -ne ".json" -and $_.Name -ne "stb_image.h" } | Get-Content | Measure-Object -Line).Lines</code><br>Which gives all the .h/.cpp files we have in the src and include directory, excluding the .json files we have for the map, and stb_image.h (the 8k-line glb image import).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-dynamics">
+      <div class="q-label">question 14</div>
+      <p class="q-text">What lessons about group dynamics did you learn from working in such a large group over an extended period?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Spending a lot of time with people kind of naturally brings you together. I was worried about not being able to get along since everyone in the group knew each other beforehand (except me), but it was surprisingly easy for me to meld in.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">I still think it takes both luck and effort: I'm lucky to be in a team that we actually share a common interest and really come along, share similar working habits, etc. At the same time, putting effort into communication and spending time working collaboratively is also really important to build up our group bond.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-differently">
+      <div class="q-label">question 15</div>
+      <p class="q-text">Looking back over the past 10 weeks, is there anything you would do differently?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Clear delineation of tasks would have helped a lot I think, and to achieve that we would have needed to plan out the architecture of our server/client at the beginning, so I would probably do that.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-courses">
+      <div class="q-label">question 16</div>
+      <p class="q-text">Which courses at UCSD do you think best prepared you for CSE 125?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">CSE 169 is a must for a graphics person — that class basically gives you everything you need for basic graphic effects if you are using C++ and OpenGL.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Any course that has you thinking about a large system and how the parts work together (e.g. CSE 120, 124). I believe that the technical aspects can be learned on the fly, but developing thinking patterns that put your work in the context of the entire system is pretty important. CSE 167 is also important if you plan on touching anything graphics related (OpenGL, making shapes, model/camera/view/whatever matrices, etc), which I fortunately did not have to do past week 2 :D</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-valuable">
+      <div class="q-label">question 17</div>
+      <p class="q-text">What were the most valuable things that you learned in the class?</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">Aside from obvious pain and gain from the technical aspect, I learned more about communicating, trust, and supporting each other within such a great team. As someone always in the mindset of "worst case I will just do everything", this class makes me realize it's impossible to do everything — we need to work together as a team. Every moment we spent together this quarter is the most valuable experience I gained in this class.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">I learned that there is a lot that can be squeezed out of two days. I also learned that it's very easy for 10 weeks to go by like they were nothing! Not sure I like how time passes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-screenshots">
+      <div class="q-label">question 18</div>
+      <p class="q-text">Please post four final screenshots of your game.</p>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">I got this lol. Give me some time.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ PART C -->
+    <h2 class="part" id="part-c">C. Archiving</h2>
+
+    <div class="q-block">
+      <p class="note">While external sites like Notion are convenient, we do not have any control over how long those sites continue to serve content. So we would like to host a static snapshot of your group's pages on this server. If you already hosted your group site (and all of its content) on cse125.ucsd.edu, then you're done! If you used Notion, please follow the instructions for creating a snapshot of your pages — only do this step once you have completed the final report.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════ PART D -->
+    <h2 class="part" id="part-d">D. Optional Feedback</h2>
+
+    <div class="q-block" id="q-pizza">
+      <div class="q-label">question 19</div>
+      <p class="q-text">For the pizza celebration after the demos — should we do it in B270 again so people can play each other's games?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">I really like the pizza celebration idea even though I couldn't stay :)</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">It was great I loved it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-advice">
+      <div class="q-label">question 20</div>
+      <p class="q-text">What advice or tips would you give students who will take the course next year?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Communication and proactivity are key. It's important to communicate what you'll do before you do it (so there isn't overlap between tasks — sorry Richard...), and it's important to communicate asap so you don't leave people waiting on tasks you're not working on. On the proactivity side, there's a balance between giving people time to do their thing and needing to get things done by the end of 10 weeks — it's much better to err on the latter side than the former.</p>
+        </div>
+      </div>
+
+      <div class="response">
+        <img class="pfp" src="luna.png" alt="Luna">
+        <div class="response-body">
+          <div class="response-name">Luna</div>
+          <p class="response-text">Be ready to be dedicated to this course.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-suggestions">
+      <div class="q-label">question 21</div>
+      <p class="q-text">Do you have any suggestions for improving the course?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">Hold it in the winter so seniors don't have to deal with the double whammy of leaving both 125 and their undergrad as a whole ): (jokes aside, emphasis on in-person group work or planning ahead might help, but then again, I'm not sure how well students would follow it anyway.)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block" id="q-other">
+      <div class="q-label">question 22</div>
+      <p class="q-text">Any other comments or feedback?</p>
+
+      <div class="response">
+        <img class="pfp" src="yuehua.png" alt="Yuehua">
+        <div class="response-body">
+          <div class="response-name">Yuehua</div>
+          <p class="response-text">I know I have everyone's discords etc etc but I'm still going to miss y'all after we go our merry ways :(</p>
+        </div>
+      </div>
+    </div>
+
   </main>
 </body>
 </html>
