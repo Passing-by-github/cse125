@@ -12,70 +12,206 @@
     @font-face { font-family: 'KiwiSoda'; src: url('../fonts/KiwiSoda.woff2') format('woff2'); font-display: swap; }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; }
+    body { font-family: 'KiwiSoda', system-ui, sans-serif; color: #fff; overflow: hidden; }
 
-    body {
-      font-family: 'KiwiSoda', system-ui, sans-serif;
-      color: #fff;
-      overflow: hidden;
+    .layer {
+      position: fixed; inset: 0; pointer-events: none;
+    }
+    .layer img {
+      width: 100%; height: 100%; display: block;
+      object-fit: fill; user-select: none; -webkit-user-drag: none;
     }
 
-    .bg {
+    /* exactly like the ship */
+    .lucky-block {
       position: fixed;
-      inset: 0;
-      z-index: 0;
-    }
-    .bg img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
+      left: 41.5%;
+      top: 57%;
+      width: 90px;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      cursor: pointer;
       display: block;
       user-select: none;
       -webkit-user-drag: none;
+      animation: block-float 2.6s ease-in-out infinite;
+      transition: filter 200ms ease;
+    }
+    .lucky-block:hover {
+       animation: block-shake 0.18s ease-in-out infinite;
+    }
+    @keyframes block-float {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50%       { transform: translate(-50%, -50%) translateY(-12px); }
+    }
+    @keyframes block-shake {
+      0%, 100% {
+        transform: translate(-50%, -50%) translateX(0);
+      }
+
+      25% {
+        transform: translate(-50%, -50%) translateX(-3px);
+      }
+
+      75% {
+        transform: translate(-50%, -50%) translateX(3px);
+      }
     }
 
     .back-link {
       position: fixed; top: 28px; left: 32px; font-size: 18px;
       color: rgba(255,255,255,.55); text-decoration: none;
-      letter-spacing: 0.04em; transition: color 200ms ease; z-index: 10;
+      letter-spacing: 0.04em; transition: color 200ms ease; z-index: 20;
     }
     .back-link:hover, .back-link:focus-visible { color: #ffd166; outline: none; }
 
-    .layer {
+    .toast {
       position: fixed;
-      inset: 0;
+      left: 41.5%; top: 34%;
+      transform: translateX(-50%) translateY(12px);
+      z-index: 30;
+      border-radius: 14px;
+      padding: 18px 32px;
+      text-align: center;
       pointer-events: none;
+      opacity: 0;
+      animation: toast-float 2.6s ease-in-out infinite;
+      transition: opacity 220ms ease, transform 220ms ease;
+      min-width: 260px; max-width: 420px;
     }
-    .layer img {
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast-title { font-size: clamp(1.3rem, 3vw, 2rem); color: #fdfa43; letter-spacing: 0.05em; }
+    .toast-credit { font-size: 13px; color: rgba(246, 220, 71, 0.6); margin-top: 5px; letter-spacing: 0.06em; }
+     @keyframes toast-float {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50%       { transform: translate(-50%, -50%) translateY(-12px); }
+    }
+
+    .surprise-particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 6;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25);
+      animation: surprise-pop 900ms cubic-bezier(.2,.8,.2,1) forwards;
+    }
+    .surprise-particle img {
       width: 100%;
       height: 100%;
       display: block;
-      object-fit: fill;
-      user-select: none;
-      -webkit-user-drag: none;
+      object-fit: contain;
+      filter: drop-shadow(0 0 8px rgba(255,255,255,.35));
+    }
+    @keyframes surprise-pop {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.25); }
+      15%  { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
+      100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.3); }
     }
 
-    .lucky-block-layer {
-      animation: block-float 2.6s ease-in-out infinite;
-    }
-
-    @keyframes block-float {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-10px); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .lucky-block-layer { animation: none; }
-    }
+    @media (prefers-reduced-motion: reduce) { .lucky-block { animation: none; } }
   </style>
 </head>
 <body>
 
   <div class="layer" style="z-index:0;" aria-hidden="true"><img src="sound_island.png" alt=""></div>
   <div class="layer" style="z-index:1;" aria-hidden="true"><img src="lucky_island.png" alt=""></div>
-  <div class="layer lucky-block-layer" style="z-index:2;" aria-hidden="true"><img src="lucky_block.png" alt=""></div>
+
+  <img class="lucky-block" src="lucky_block.png" alt="lucky block" draggable="false">
 
   <a href="../" class="back-link">← back</a>
 
+  <div class="toast" id="toast">
+    <div class="toast-title" id="toast-title"></div>
+    <div class="toast-credit" id="toast-credit"></div>
+  </div>
+
+  <script>
+    const tracks = [
+      { file: 'Kevin MacLeod_ Jellyfish in Space.wav', name: 'Jellyfish in Space',  credit: 'Kevin MacLeod' },
+      { file: 'Let her go good.mp3',                   name: 'Let Her Go',           credit: 'Passenger' },
+      { file: 'Taco_Bell_Bong.ogg',                    name: 'Taco Bell Bong',       credit: 'Taco Bell' },
+      { file: 'boss_fruit.mp3',                        name: 'Boss Fruit',           credit: 'Pixabay' },
+      { file: 'electric_guitar.mp3',                   name: 'Electric Guitar',      credit: 'Thanh' },
+      { file: 'flyingvacuumluna.wav',                  name: 'Flying Vacuum',        credit: 'Luna' },
+      { file: 'freesound_community-tada-fanfare-a-6313.mp3', name: 'Tada Fanfare',  credit: 'Freesound Community' },
+      { file: 'fzst-vine-boom-162668.mp3',             name: 'Vine Boom',            credit: ' Bluezone Corporation' },
+      { file: 'johnnybacon156-fah-469417.mp3',         name: 'Fah',                  credit: 'Taileon' },
+      { file: 'numkaty.mp3',                           name: 'num',                  credit: 'Katy' },
+    ];
+
+    const FONT_CHANCE = 0.10;
+    const block = document.querySelector('.lucky-block');
+    const toast = document.getElementById('toast');
+    const toastTitle  = document.getElementById('toast-title');
+    const toastCredit = document.getElementById('toast-credit');
+    let hideTimer = null, currentAudio = null;
+
+    function showToast(title, credit) {
+      toastTitle.textContent  = title;
+      toastCredit.textContent = credit;
+      toast.classList.add('show');
+      spawnSurpriseBurst();
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    function spawnSurpriseBurst() {
+      const rect = block.getBoundingClientRect();
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top + rect.height / 2;
+
+      for (let i = 0; i < 16; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'surprise-particle';
+        particle.style.left = `${originX}px`;
+        particle.style.top = `${originY}px`;
+        particle.style.width = `${10 + Math.random() * 16}px`;
+        particle.style.height = `${10 + Math.random() * 16}px`;
+        particle.style.setProperty('--dx', `${(Math.random() - 0.5) * 140}px`);
+        particle.style.setProperty('--dy', `${(Math.random() - 0.5) * 140 - 20}px`);
+        particle.style.animationDelay = `${Math.random() * 0.04}s`;
+
+        const img = document.createElement('img');
+        img.src = 'Squicky.png';
+        img.alt = '';
+        img.draggable = false;
+        particle.appendChild(img);
+
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 10000);
+      }
+    }
+
+    // pixel-perfect click: ignore transparent areas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    block.addEventListener('load', () => {
+      canvas.width  = block.naturalWidth;
+      canvas.height = block.naturalHeight;
+      ctx.drawImage(block, 0, 0);
+    });
+    if (block.complete) block.dispatchEvent(new Event('load'));
+
+    block.addEventListener('click', (e) => {
+      const rect   = block.getBoundingClientRect();
+      const scaleX = block.naturalWidth  / rect.width;
+      const scaleY = block.naturalHeight / rect.height;
+      const alpha  = ctx.getImageData(
+        Math.floor((e.clientX - rect.left) * scaleX),
+        Math.floor((e.clientY - rect.top)  * scaleY), 1, 1
+      ).data[3];
+      if (alpha < 10) return;
+
+      if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+      if (Math.random() < FONT_CHANCE) {
+        showToast('this font!', 'KiwiSoda — Anita Jürgeleit');
+        return;
+      }
+      const track = tracks[Math.floor(Math.random() * tracks.length)];
+      currentAudio = new Audio(track.file);
+      currentAudio.play().catch(() => {});
+      showToast(track.name, track.credit);
+    });
+  </script>
 </body>
 </html>
