@@ -227,10 +227,12 @@
         font-size: 11px;
       }
     }
+    #starfield { position: fixed; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; }
   </style>
 </head>
 
 <body>
+  <div id="starfield" aria-hidden="true"></div>
   <a href="../" class="back-link">← back</a>
 
   <div class="title">
@@ -313,5 +315,17 @@
       </a>
     </section>
   </main>
+  <script>
+    (function () {
+      const c = document.getElementById('starfield');
+      for (let i = 0; i < 80; i++) {
+        const el = document.createElement('img');
+        el.src = '../assets/spark.png'; el.alt = ''; el.draggable = false;
+        const size = 4 + Math.random() * 10;
+        el.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px;opacity:${(0.25+Math.random()*0.65).toFixed(2)};pointer-events:none`;
+        c.appendChild(el);
+      }
+    })();
+  </script>
 </body>
 </html>
