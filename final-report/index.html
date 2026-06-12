@@ -25,7 +25,7 @@
       background:
         radial-gradient(circle at 12% 10%, rgba(255,210,80,.12), transparent 28%),
         radial-gradient(ellipse 70% 55% at 42% 52%, rgba(75,105,255,.35), transparent 65%),
-        linear-gradient(180deg, #080026 0%, #12007a 48%, #252cff 100%);
+        linear-gradient(180deg, #080026 0%, #3f0d95 48%, #3b4abd 100%);
     }
 
     /* ── fixed chrome ── */
@@ -83,9 +83,15 @@
 
     /* ── page body ── */
     .page {
+      position: relative;
+      z-index: 1;
       max-width: 700px;
       margin: 0 auto;
       padding: 80px 32px 100px;
+      background: rgba(8, 0, 38, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 0 80px rgba(0,0,0,.4);
     }
 
     .report-title {
@@ -125,6 +131,7 @@
       margin-bottom: 4px;
     }
     .q-text {
+      font-family: system-ui, sans-serif;
       font-size: clamp(1rem, 1.8vw, 1.25rem);
       color: rgba(255,255,255,.85);
       letter-spacing: 0.03em;
@@ -208,6 +215,22 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
 
+    /* ── background fx ── */
+    .clouds-layer {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; overflow: hidden;
+    }
+    .cloud {
+      position: absolute; left: 0; top: 0;
+      width: clamp(78px, 8vw, 155px); opacity: 0.82;
+      filter: drop-shadow(0 8px 20px rgba(0,0,0,.22));
+      will-change: transform;
+    }
+    .cloud img { width: 100%; height: 100%; display: block; user-select: none; }
+    .cloud--small { width: clamp(58px, 5.8vw, 112px); opacity: 0.72; }
+    .cloud--large { width: clamp(100px, 10vw, 180px); opacity: 0.9; }
+    #starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+
     /* ── dead easter egg ── */
     .dead-wrap {
       display: flex;
@@ -240,6 +263,9 @@
   </style>
 </head>
 <body>
+
+  <div id="starfield" aria-hidden="true"></div>
+  <div class="clouds-layer" id="cloud-layer" aria-hidden="true"></div>
 
   <a href="../" class="back-link">← back</a>
 
@@ -603,8 +629,8 @@
       
       
 
-  
-    
+    </div>
+
     <!-- ═══════════════════════════════════════ PART C -->
     <h2 class="part" id="part-c">C. Optional Feedback</h2>
 
@@ -684,6 +710,53 @@
   </main>
 
   <script>
+    // ── Starfield ──
+    (function () {
+      const container = document.getElementById('starfield');
+      for (let i = 0; i < 80; i++) {
+        const el = document.createElement('img');
+        el.src = '../assets/spark.png'; el.alt = ''; el.draggable = false;
+        const size = 4 + Math.random() * 10;
+        el.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px;opacity:${(0.25+Math.random()*0.65).toFixed(2)};pointer-events:none;user-select:none`;
+        container.appendChild(el);
+      }
+    })();
+
+    // ── Clouds ──
+    (function () {
+      const cloudsLayer = document.getElementById('cloud-layer');
+      const imgs = Array.from({length:8}, (_,i) => `../assets/cloud_${i+1}.png`);
+      const allImgs = [...imgs, ...[...imgs].sort(()=>Math.random()-.5)];
+      const path = { start:{x:10,y:100}, c1:{x:16,y:38}, c2:{x:82,y:20}, end:{x:100,y:34} };
+      const bez = (p0,p1,p2,p3,t) => {
+        const u=1-t;
+        return { x:u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x,
+                 y:u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y };
+      };
+      const clouds = allImgs.map((src, i) => {
+        const el = document.createElement('div');
+        const row = i < 8 ? 0 : 1;
+        el.className = `cloud ${i%3===0?'cloud--large':i%2===0?'cloud--small':''}`;
+        const img = document.createElement('img');
+        img.src = src; img.alt = ''; img.draggable = false;
+        el.appendChild(img); cloudsLayer.appendChild(el);
+        return { el, row, speed: 0.03+Math.random()*0.009+(row?0.01:0),
+                 offset:(i%8)/16, scale:0.8+Math.random()*0.25,
+                 drift:row===0?-0.02+Math.random()*0.04:0.01+Math.random()*0.03 };
+      });
+      (function tick(now) {
+        requestAnimationFrame(tick);
+        const W = cloudsLayer.clientWidth||1, H = cloudsLayer.clientHeight||1;
+        clouds.forEach(c => {
+          const phase = (now/1000)*c.speed + c.offset + c.drift;
+          const p = bez(path.start,path.c1,path.c2,path.end,phase%1);
+          const x = (p.x/100)*W - c.el.offsetWidth/2;
+          const y = ((p.y + c.row*14)/100)*H - c.el.offsetHeight/2;
+          c.el.style.transform = `translate(${x}px,${y}px) scale(${c.scale})`;
+        });
+      })(performance.now());
+    })();
+
     const goodbyeUrl = '../goodbye/';
 
     function openGoodbye() {

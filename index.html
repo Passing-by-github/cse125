@@ -198,11 +198,11 @@
     /* ---- Ship ---- */
     .ship-link {
       position: fixed;
-      right: 7vw;
+      right: 10vw;
       top: 14vh;
       z-index: 5;
       display: block;
-      width: clamp(90px, 10vw, 160px);
+      width: clamp(140px, 18vw, 340px);
       animation: ship-float 3.8s ease-in-out infinite;
       transition: filter 220ms ease, transform 220ms ease;
       cursor: pointer;
@@ -762,7 +762,7 @@
         const dist   = Math.max(
           (size.y / 2) / Math.tan(fovRad / 2),
           (size.x / 2) / (Math.tan(fovRad / 2) * (W / H))
-        ) * 1.95;
+        ) * 1.75;
         camera.position.set(center.x, center.y, center.z + dist);
         camera.lookAt(center);
         camera.near = dist * 0.01;
